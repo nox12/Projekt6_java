@@ -45,6 +45,8 @@ public class Okno extends JFrame implements ActionListener,KeyListener {
 	private String napis="";
 	private String napis2="";
 	JProgressBar pasek;
+	Integer wartosc_i=0;
+	Double wartosc_d=0.0;
 
 	/**
 	 * Launch the application.
@@ -188,19 +190,19 @@ public class Okno extends JFrame implements ActionListener,KeyListener {
 		
 	}
 
-	public double dzialanie(String dane)
+	public String dzialanie(String dane)
 	{
 		String pom="";
 		String suma="";
-		Integer wartosc_i=0;
-		double wartosc_d=0;
+		wartosc_i=0;
+		wartosc_d=0.0;
 		int n=0;
-		if(dane==null)return 0;
+		if(dane==null)return null;
 		if(dane.charAt(0) == '(')
 		{
 			int ilosc_l=1;
 			int ilosc_r=0;
-			for(int i=1; ;i++)
+			for(int i=1;i<dane.length();i++)
 			{
 				if(dane.charAt(i) == '(')ilosc_l++;
 				if(dane.charAt(i) == ')')ilosc_r++;
@@ -208,15 +210,55 @@ public class Okno extends JFrame implements ActionListener,KeyListener {
 				pom+=dane.charAt(i);
 				n++;
 			}
-			suma+=dzialanie(pom);
-			if(dane.length() <= n+2)
+			pom=dzialanie(pom);
+			if(pom == "zle dane")return pom;
+			suma+=pom;
+			n+=2;
+			if(dane.length() <= n)
 			{
-				napis=new Integer(wartosc_i.parseInt(suma)).toString();
-				return 0;
+				return suma;
 			}
-			
+			if((dane.charAt(n) != '+' )&& (dane.charAt(n) != '-' )&& (dane.charAt(n) != '*') && (dane.charAt(n) != '/'))
+			{
+				return "zle dane";
+			}
+			char znak=dane.charAt(n);
+			dane=dane.substring(n+1);
+			switch(znak)
+			{
+				case '+': wartosc_d=wartosc_d.parseDouble(suma)+wartosc_d.parseDouble(dzialanie(dane));break;
+				case '-': wartosc_d=wartosc_d.parseDouble(suma)-wartosc_d.parseDouble(dzialanie(dane));break;
+				case '*': wartosc_d=wartosc_d.parseDouble(suma)*wartosc_d.parseDouble(dzialanie(dane));break;
+				case '/': wartosc_d=wartosc_d.parseDouble(suma)/wartosc_d.parseDouble(dzialanie(dane));break;
+			}
+			return wartosc_d.toString();
 		}
-		return 0;
+		else
+		{
+			n=0;
+			for(int i=0; i<dane.length();i++)
+			{
+				if((dane.charAt(n) == '+' )|| (dane.charAt(n) == '-') || (dane.charAt(n) == '*') || (dane.charAt(n) == '/') )break;
+				suma+=dane.charAt(n);
+				n++;
+			}
+			if(n>=dane.length())return suma;
+			if((dane.charAt(n) != '+' )&& (dane.charAt(n) != '-' )&& (dane.charAt(n) != '*') && (dane.charAt(n) != '/'))
+			{
+				return "zle dane";
+			}
+			char znak=dane.charAt(n);
+			dane=dane.substring(n+1);
+			switch(znak)
+			{
+				case '+': wartosc_d=wartosc_d.parseDouble(suma)+wartosc_d.parseDouble(dzialanie(dane));break;
+				case '-': wartosc_d=wartosc_d.parseDouble(suma)-wartosc_d.parseDouble(dzialanie(dane));break;
+				case '*': wartosc_d=wartosc_d.parseDouble(suma)*wartosc_d.parseDouble(dzialanie(dane));break;
+				case '/': wartosc_d=wartosc_d.parseDouble(suma)/wartosc_d.parseDouble(dzialanie(dane));break;
+			}
+			if(wartosc_d.isFinite(wartosc_d))return wartosc_d.toString();
+			return "zle dane";
+		}
 	}
 	
 	@Override
@@ -256,7 +298,22 @@ public class Okno extends JFrame implements ActionListener,KeyListener {
 		if(arg0.getActionCommand().equals("/"))napis += "/";
 		if(arg0.getActionCommand().equals("("))napis += "(";
 		if(arg0.getActionCommand().equals(")"))napis += ")";
-		if(arg0.getActionCommand().equals("="))dzialanie(napis);
+		if(arg0.getActionCommand().equals("=")) 
+		{
+			if(napis2=="zle dane")napis="zle dane";
+			else 
+			{
+				try
+				{
+					napis2=dzialanie(napis);
+					napis=""+((int)wartosc_d.parseDouble(napis2));
+				}
+				catch (Exception e)
+				{
+					napis ="zle dane";
+				}
+			}
+		}
 		text_wynik.setText(napis);
 		text_double.setText(napis2);
 		pasek.setValue(pasek.getValue()+1);
